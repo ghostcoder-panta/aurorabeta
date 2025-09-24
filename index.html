@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora - Ensaios Clínicos</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            color: white;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .aurora-logo {
+            width: 80px;
+            height: 45px;
+            fill: white;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <svg class="aurora-logo" viewBox="0 0 408 216" xmlns="http://www.w3.org/2000/svg">
+            <path id="symbol" d="M248.79,192l137.88-79.61-12-20.78-137.88,79.61L316.4,33.33l-20.79-12-79.61,137.89V0h-24V159.22L112.4,21.33l-20.79,12,79.61,137.89L33.33,91.61l-12,20.78,137.89,79.61H0v24H176.39c-1.62-3.68-2.51-7.73-2.51-12,0-16.57,13.43-30,30-30s30,13.43,30,30c0,4.27-.89,8.32-2.51,12h176.63v-24H248.79Z"/>
+        </svg>
+        <h1>Aurora</h1>
+        <p>Detectando dispositivo...</p>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // Device detection function
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const screenWidth = window.screen.width;
+            const windowWidth = window.innerWidth;
+
+            // Check for mobile user agents first
+            const mobileUserAgents = /android|webos|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+
+            // Check for tablet user agents
+            const tabletUserAgents = /ipad|tablet|kindle|silk/i.test(userAgent);
+
+            // Desktop browsers (explicitly check for desktop patterns)
+            const desktopUserAgents = /windows nt|mac os x|linux/i.test(userAgent) &&
+                                    !/mobile|android|iphone|ipod|ipad|tablet/i.test(userAgent);
+
+            // More sophisticated detection
+            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+            // Decision logic (prioritize user agent over screen size)
+            let deviceType;
+
+            if (mobileUserAgents && !tabletUserAgents) {
+                deviceType = 'mobile';
+            } else if (tabletUserAgents) {
+                deviceType = 'tablet';
+            } else if (desktopUserAgents || (screenWidth > 1024 && !isTouch)) {
+                deviceType = 'desktop';
+            } else if (screenWidth <= 480) {
+                deviceType = 'mobile';
+            } else if (screenWidth <= 1024 && isTouch) {
+                deviceType = 'tablet';
+            } else {
+                deviceType = 'desktop'; // Default to desktop for unknown cases
+            }
+
+            console.log('Device Detection:', {
+                userAgent: userAgent,
+                screenWidth: screenWidth,
+                windowWidth: windowWidth,
+                mobileUserAgents: mobileUserAgents,
+                tabletUserAgents: tabletUserAgents,
+                desktopUserAgents: desktopUserAgents,
+                isTouch: isTouch,
+                detected: deviceType
+            });
+
+            return {
+                isMobile: deviceType === 'mobile',
+                isTablet: deviceType === 'tablet',
+                isDesktop: deviceType === 'desktop',
+                detectedType: deviceType
+            };
+        }
+
+        // Redirect based on device
+        function redirectToAppropriateVersion() {
+            const device = detectDevice();
+
+            setTimeout(() => {
+                if (device.isMobile || device.isTablet) {
+                    // Redirect to mobile version - in a real setup, this would be a separate file
+                    showMobileVersion();
+                } else {
+                    // Redirect to desktop version - in a real setup, this would be your original index.html
+                    showDesktopVersion();
+                }
+            }, 1500); // Show loading for 1.5 seconds
+        }
+
+        // For demonstration, we'll switch content instead of redirecting
+        function showMobileVersion() {
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: white;">
+                    <h2>Versão Mobile Detectada</h2>
+                    <p>Redirecionando para a interface mobile otimizada...</p>
+                    <button onclick="loadMobileApp()" style="
+                        background: white;
+                        color: #0056b3;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        margin-top: 20px;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">Carregar App Mobile</button>
+                </div>
+            `;
+        }
+
+        function showDesktopVersion() {
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: white;">
+                    <h2>Versão Desktop Detectada</h2>
+                    <p>Redirecionando para a interface desktop...</p>
+                    <button onclick="loadDesktopApp()" style="
+                        background: white;
+                        color: #0056b3;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        margin-top: 20px;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">Carregar App Desktop</button>
+                </div>
+            `;
+        }
+
+        // These functions redirect to actual files
+        function loadMobileApp() {
+            window.location.href = 'mobile.html';
+        }
+
+        function loadDesktopApp() {
+            window.location.href = 'desktop.html';
+        }
+
+        // Start detection when page loads
+        window.addEventListener('load', redirectToAppropriateVersion);
+    </script>
+</body>
+</html>

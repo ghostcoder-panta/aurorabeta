@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensaios Clínicos - Dashboard Global</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+         /* style for the initial message */
+        .initial-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            font-size: 18px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            margin: 20px;
+        }
+
+        .initial-message h3 {
+            color: #0056b3;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0056b3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Layout Principal */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Filtros */
+        .sidebar {
+            width: 280px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+            padding: 25px 20px;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .sidebar h2 {
+            color: #0056b3;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 600;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e6f2ff;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-group select:hover {
+            border-color: #0056b3;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #0056b3;
+            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+        }
+
+        .stats-box {
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            box-shadow: 0 4px 12px rgba(0, 86, 179, 0.15);
+        }
+
+        .stats-box h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-size: 14px;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        .phase-stats {
+            background: rgba(255,255,255,0.12);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .visible-count-box {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .visible-count-box strong {
+            color: #0056b3;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .country-highlight-box {
+            background: #ecfdf5;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid #10b981;
+            text-align: center;
+            display: none;
+        }
+
+        .country-highlight-box.active {
+            display: block;
+        }
+
+        .country-highlight-box strong {
+            color: #065f46;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Floating update box */
+        .floating-update {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3); /* More transparent */
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 999;
+            backdrop-filter: blur(8px); /* Increased blur for better readability */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 30px;
+            padding-top: 140px; /* Space for fixed header */
+            overflow-y: auto;
+        }
+
+        /* Fixed Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid #e2e8f0;
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            z-index: 100;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header h1 {
+            color: #0056b3;
+            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .aurora-logo {
+            width: 36px;
+            height: 20px;
+            fill: #0056b3;
+            flex-shrink: 0;
+        }
+
+        .header p {
+           color: #64748b;
+           font-size: 14px;
+           font-weight: 400;
+           margin: 0;
+        }
+
+        .title-filter-container {
+            background: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .title-filter-container input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* View All Button */
+        .view-all-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .view-all-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        /* Grid Cards */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        /* Cards Dinâmicos */
+        .study-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            will-change: transform;
+        }
+
+        .study-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0056b3, #00b3b3);
+        }
+
+        .study-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .study-card.hidden {
+            display: none;
+        }
+
+        .study-card.highlighted {
+            border: 2px solid #10b981;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .study-card.highlighted::before {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        /* NCT ID Link */
+        .nct-id-link {
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .nct-id-link:hover .nct-id {
+            background-color: #e2e8f0;
+            color: #0056b3;
+        }
+
+        .nct-id {
+            font-size: 12px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 500;
+            font-family: monospace;
+            transition: all 0.2s ease;
+        }
+
+        .study-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1e293b;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .phase-status-line {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .phase-badge {
+            background: #e6f2ff;
+            color: #0056b3;
+        }
+
+        .status-badge {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .tumor-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .condition-text {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .centers-text {
+            font-size: 13px;
+            color: #1e40af;
+            background: #eff6ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            line-height: 1.4;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .centers-text.highlighted-country {
+            color: #065f46;
+            background: #ecfdf5;
+            border-left-color: #10b981;
+        }
+
+        .centers-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-details-btn {
+            background: linear-gradient(135deg, #0056b3 0%, #00b3b3 100%);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            align-self: flex-start;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .view-details-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 86, 179, 0.25);
+        }
+
+        /* Modal Detalhes */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .detail-container {
+            background: white;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .detail-content {
+            padding: 30px;
+        }
+
+        .detail-section {
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section h3 {
+            color: #0056b3;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-section h4 {
+            color: #334155;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .detail-text {
+            color: #475569;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .criteria-detail {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            border-left: 4px solid #0056b3;
+            line-height: 1.7;
+        }
+
+        .criteria-detail.collapsed {
+             display: none;
+        }
+
+        .criteria-detail.expanded {
+            display: block;
+        }
+
+        .arrow-icon {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            margin-right: 8px;
+        }
+
+        .arrow-icon.rotated {
+            transform: rotate(90deg);
+        }
+
+        .detail-section h3:hover {
+            color: #003d82;
+        }
+
+        .arms-detail {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            border-left: 4px solid #00b3b3;
+        }
+
+        .centers-detail {
+            background: #ecfdf5;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+
+        .center-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(6, 95, 70, 0.1);
+            font-size: 14px;
+            color: #065f46;
+        }
+
+        .center-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 0 0 12px 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary:hover {
+            background: #004494;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 86, 179, 0.25);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+
+        .btn-contact {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-contact:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        /* Responsividade Mobile */
+        @media (max-width: 1024px) {
+            .cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                padding: 20px;
+            }
+
+            .main-content {
+                margin-left: 280px;
+                flex: 1;
+                padding: 30px;
+                overflow-y: auto;
+                padding-top: 130px; /* Add this line to create space for the fixed header */
+            }
+
+            .header {
+                position: relative;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-overlay {
+                padding: 10px;
+            }
+
+            .detail-container {
+                max-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .title-filter-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .title-filter-container input {
+                width: 100%;
+            }
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .study-card {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .detail-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .loading::before {
+            content: '⏳';
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .version {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        /* Ícones */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Filtros -->
+        <div class="sidebar">
+            <h2>Filtros Rápidos</h2>
+
+            <button class="view-all-btn" id="view-all-btn">
+                🔍 Ver Todos os Estudos
+            </button>
+
+            <div class="filter-group">
+                <label for="phase-filter">Fase do Estudo</label><select id="phase-filter">
+                <option value="all">Todas as Fases</option>
+                 <option value="Fase 1">Fase 1</option>
+                 <option value="Fase 2">Fase 2</option>
+                 <option value="Fase 3">Fase 3</option>
+                 <option value="Fase 4">Fase 4</option>
+                 <option value="Outras">Outras</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="tumor-filter">Tipo de Tumor</label>
+                <select id="tumor-filter">
+                    <option value="all">Todos os Tipos</option>
+                    <option value="Lung Cancer">Cancro do Pulmão</option>
+                    <option value="Breast Cancer">Cancro da Mama</option>
+                    <option value="GI Cancer">Cancro Gastrointestinal</option>
+                    <option value="Prostate Cancer">Cancro da Próstata</option>
+                    <option value="Bladder Cancer">Cancro da Bexiga</option>
+                    <option value="Kidney Cancer">Cancro do Rim</option>
+                    <option value="Other">Outros</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="country-filter">País</label>
+                <select id="country-filter">
+                    <option value="all">Todos os Países</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+
+            <div class="stats-box">
+                <h3>📊 Estatísticas</h3>
+                <div class="stat-item">
+                    <span>Total de Estudos</span>
+                    <span class="stat-value" id="total-studies">-</span>
+                </div>
+                <div class="stat-item">
+                    <span>Países</span>
+                    <span class="stat-value" id="total-countries">-</span>
+                </div>
+
+                <div class="phase-stats" id="phase-stats">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <div class="visible-count-box">
+                <strong id="visible-studies-count">- estudos visíveis</strong>
+            </div>
+
+            <div class="country-highlight-box" id="country-highlight-box">
+                <strong id="country-highlight-text"></strong>
+            </div>
+
+            <div class="footer">
+                <p> <span class="version">Auroratrials v. 0.96beta</span></p>
+            </div>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content">
+            <div class="header">
+                <h1>
+                    <svg class="aurora-logo" viewBox="0 0 408 216" xmlns="http://www.w3.org/2000/svg">
+                        <path id="symbol" d="M248.79,192l137.88-79.61-12-20.78-137.88,79.61L316.4,33.33l-20.79-12-79.61,137.89V0h-24V159.22L112.4,21.33l-20.79,12,79.61,137.89L33.33,91.61l-12,20.78,137.89,79.61H0v24H176.39c-1.62-3.68-2.51-7.73-2.51-12,0-16.57,13.43-30,30-30s30,13.43,30,30c0,4.27-.89,8.32-2.51,12h176.63v-24H248.79Z"/>
+                    </svg>
+                    Aurora - Encontre um ensaio clínico
+                </h1>
+                <p>Dashboard interativo para visualização e filtragem de ensaios clínicos oncológicos por país</p>
+            </div>
+
+            <div class="title-filter-container">
+                <input type="text" id="title-filter" placeholder="🔍 Pesquisar palavra-chave no título do estudo...">
+            </div>
+
+            <!-- Modified cards container - starts empty -->
+            <div class="cards-container" id="cards-container">
+                <div class="initial-message" id="initial-message">
+                    <h3>🔍 Comece sua busca</h3>
+                    <p>Clique em "Ver Todos os Estudos" ou selecione filtros para começar a pesquisar estudos clínicos</p>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Carregando estudos...</p>
+            </div>
+        </div>
+     </div>
+
+    <!-- Floating update box -->
+    <div class="floating-update">
+        Atualizado em 13/09/2025 14:32
+    </div>
+
+    <!-- Modal Detalhes -->
+    <div class="detail-overlay" id="detail-overlay">
+        <div class="detail-container">
+            <div class="detail-header">
+                <button class="close-btn" id="close-detail">&times;</button>
+                <h2 id="detail-title"></h2>
+                <a href="#" target="_blank" class="nct-id-link" id="detail-nct-link">
+                    <div class="nct-id" id="detail-nct"></div>
+                </a>
+            </div>
+
+            <div class="detail-content">
+                <div class="detail-section">
+                    <h3>📋 Informações Gerais</h3>
+                    <div class="detail-text" id="detail-phase-status"></div>
+                    <div class="detail-text" id="detail-condition"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🏥 Localizações</h3>
+                    <div class="centers-detail" id="detail-locations"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🧪 Braços do Estudo</h3>
+                    <div class="arms-detail" id="detail-arms"></div>
+                </div>
+
+               <div class="detail-section">
+                <h3 onclick="toggleCriteria('inclusion')" style="cursor: pointer; user-select: none;">
+                 <span id="inclusion-arrow" class="arrow-icon">▶</span> Critérios de Inclusão
+                    </h3>
+                      <div class="criteria-detail collapsed" id="detail-inclusion-content">
+                      <div id="detail-inclusion"></div>
+                      </div>
+                </div>
+
+               <div class="detail-section">
+                    <h3 onclick="toggleCriteria('exclusion')" style="cursor: pointer; user-select: none;">
+                       <span id="exclusion-arrow" class="arrow-icon">▶</span> Critérios de Exclusão
+                    </h3>
+                     <div class="criteria-detail collapsed" id="detail-exclusion-content">
+                      <div id="detail-exclusion"></div>
+                 </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="#" class="btn-contact" id="contact-btn">
+                    ✉️ Contactar
+                </a>
+                <button class="btn-secondary" id="close-btn">
+                    Voltar à Lista
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // API Configuration
+    const API_URL = 'http://localhost:5000'; // Update this to your server URL
+
+    // Global variables
+    let studies = [];
+    let allStudies = []; // Store all studies for filtering
+    let activeFilters = {
+        title: '',
+        phase: 'all',
+        tumor: 'all',
+        country: 'all'
+    };
+    let currentStudy = null;
+    let hasSearched = false;
+    let overallStats = null;
+
+    // DOM Elements
+    const titleFilter = document.getElementById('title-filter');
+    const phaseFilter = document.getElementById('phase-filter');
+    const tumorFilter = document.getElementById('tumor-filter');
+    const countryFilter = document.getElementById('country-filter');
+    const cardsContainer = document.getElementById('cards-container');
+    const loadingElement = document.getElementById('loading');
+    const initialMessage = document.getElementById('initial-message');
+    const visibleStudiesCount = document.getElementById('visible-studies-count');
+    const countryHighlightBox = document.getElementById('country-highlight-box');
+    const countryHighlightText = document.getElementById('country-highlight-text');
+    const viewAllBtn = document.getElementById('view-all-btn');
+
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Load overall statistics
+    async function loadOverallStats() {
+        try {
+            const response = await fetch(`${API_URL}/api/stats`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            overallStats = data;
+            updateSidebarStats(data);
+
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    // Fetch available filters on page load
+    async function loadAvailableFilters() {
+        try {
+            const response = await fetch(`${API_URL}/api/filters`);
+            const data = await response.json();
+
+            // Populate country filter
+            if (data.countries && data.countries.length > 0) {
+                countryFilter.innerHTML = '<option value="all">Todos os Países</option>';
+                data.countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country;
+                    option.textContent = country;
+                    countryFilter.appendChild(option);
+                });
+            }
+
+        } catch (error) {
+            console.error('Error loading filters:', error);
+        }
+    }
+
+    // Update sidebar statistics
+    function updateSidebarStats(data) {
+        // Update total studies
+        const totalStudiesElement = document.getElementById('total-studies');
+        if (totalStudiesElement) {
+            totalStudiesElement.textContent = data.total_studies || 0;
+        }
+
+        // Update total countries
+        const totalCountriesElement = document.getElementById('total-countries');
+        if (totalCountriesElement) {
+            totalCountriesElement.textContent = data.total_countries || 0;
+        }
+
+        // Update phase statistics
+        const phaseStatsContainer = document.getElementById('phase-stats');
+        if (phaseStatsContainer && data.phase_counts) {
+            phaseStatsContainer.innerHTML = '';
+
+            const mainPhases = ['Fase 1', 'Fase 2', 'Fase 3', 'Fase 4'];
+
+            mainPhases.forEach(phase => {
+                if (data.phase_counts[phase]) {
+                    const statItem = document.createElement('div');
+                    statItem.className = 'stat-item';
+                    statItem.innerHTML = `
+                        <span>${phase}</span>
+                        <span class="stat-value">${data.phase_counts[phase]}</span>
+                    `;
+                    phaseStatsContainer.appendChild(statItem);
+                }
+            });
+        }
+    }
+
+    // Search studies from backend
+    async function searchStudies() {
+        // Show loading
+        loadingElement.style.display = 'block';
+        cardsContainer.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_URL}/api/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(activeFilters)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            studies = data.studies || [];
+            allStudies = studies; // Store for client-side filtering
+            hasSearched = true;
+
+            // Update UI
+            displayStudies(studies);
+            updateStats(studies);
+
+        } catch (error) {
+            console.error('Search error:', error);
+            // Check if server is running
+            if (error.message.includes('Failed to fetch')) {
+                showError('Não é possível conectar ao servidor. Verifique se o Flask está rodando na porta 5000.');
+            } else {
+                showError('Erro ao buscar estudos. Por favor, tente novamente.');
+            }
+        } finally {
+            loadingElement.style.display = 'none';
+        }
+    }
+
+    // Load all studies (for "View All" functionality)
+    async function loadAllStudies() {
+        const tempFilters = { ...activeFilters };
+
+        // Clear all filters to get all studies
+        activeFilters = {
+            title: '',
+            phase: 'all',
+            tumor: 'all',
+            country: 'all'
+        };
+
+        await searchStudies();
+
+        // Restore filter settings but don't re-search
+        activeFilters = tempFilters;
+    }
+
+    // Display studies as cards
+    function displayStudies(studiesToDisplay) {
+        cardsContainer.innerHTML = '';
+
+        if (studiesToDisplay.length === 0) {
+            cardsContainer.innerHTML = `
+                <div class="initial-message">
+                    <h3>📋 Nenhum estudo encontrado</h3>
+                    <p>Tente ajustar seus filtros de busca</p>
+                </div>
+            `;
+            return;
+        }
+
+        studiesToDisplay.forEach(study => {
+            const card = createStudyCard(study);
+            cardsContainer.appendChild(card);
+        });
+    }
+
+    // Create a study card element
+    function createStudyCard(study) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'study-card';
+        cardDiv.setAttribute('data-nct', study.nct_id);
+        cardDiv.setAttribute('data-phase', study.phase);
+        cardDiv.setAttribute('data-tumor', study.tumor_category);
+        cardDiv.setAttribute('data-countries', study.countries);
+        cardDiv.setAttribute('data-primary-country', study.primary_country);
+        cardDiv.setAttribute('data-locations', study.locations);
+
+        // Random border color for visual variety
+        const colors = ['#4c72b0', '#55a868', '#c44e52', '#8172b3', '#dd8452'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        cardDiv.style.borderLeft = `4px solid ${randomColor}`;
+
+        const numCenters = study.locations ? study.locations.split('|').length : 0;
+        const countryFlag = getCountryFlag(study.primary_country);
+
+        cardDiv.innerHTML = `
+            <a href="https://clinicaltrials.gov/ct2/show/${study.nct_id}"
+               target="_blank" class="nct-id-link">
+                <div class="nct-id">${study.nct_id}</div>
+            </a>
+            <h3 class="study-title">${study.title}</h3>
+            <div class="phase-status-line">
+                <span class="badge phase-badge">${study.phase}</span>
+                <span class="badge status-badge">${study.status}</span>
+                <span class="badge tumor-badge">${study.tumor_category}</span>
+            </div>
+            <p class="condition-text">${study.conditions}</p>
+            <div class="centers-text">
+                <div class="centers-label">🌍 Centros Disponíveis</div>
+                <div class="centers-content">
+                    ${countryFlag} ${study.primary_country} (${numCenters} centros)
+                </div>
+            </div>
+            <button class="view-details-btn" onclick="showStudyDetails('${study.nct_id}')">
+                Ver Detalhes
+            </button>
+        `;
+
+        return cardDiv;
+    }
+
+    // Show initial message
+    function showInitialMessage() {
+        cardsContainer.innerHTML = `
+            <div class="initial-message" id="initial-message">
+                <h3>🔍 Comece sua busca</h3>
+                <p>Clique em "Ver Todos os Estudos" ou selecione filtros para começar a pesquisar estudos clínicos</p>
+            </div>
+        `;
+        visibleStudiesCount.textContent = '0 estudos visíveis';
+    }
+
+    // Show error message
+    function showError(message) {
+        cardsContainer.innerHTML = `
+            <div class="initial-message">
+                <h3>⚠️ Erro</h3>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
+    // Update statistics
+    function updateStats(studiesToShow) {
+        visibleStudiesCount.textContent = `${studiesToShow.length} estudos visíveis`;
+
+        // Update country highlight if country filter is active
+        if (activeFilters.country !== 'all' && studiesToShow.length > 0) {
+            const flag = getCountryFlag(activeFilters.country);
+            countryHighlightText.textContent = `${flag} ${studiesToShow.length} estudos em ${activeFilters.country}`;
+            countryHighlightBox.classList.add('active');
+        } else {
+            countryHighlightBox.classList.remove('active');
+        }
+    }
+
+    // Get country flag emoji
+    function getCountryFlag(country) {
+        const flags = {
+            'Brazil': '🇧🇷',
+            'Brasil': '🇧🇷',
+            'Argentina': '🇦🇷',
+            'Chile': '🇨🇱',
+            'Colombia': '🇨🇴',
+            'Costa Rica': '🇨🇷',
+            'Cuba': '🇨🇺',
+            'Ecuador': '🇪🇨',
+            'Guatemala': '🇬🇹',
+            'Mexico': '🇲🇽',
+            'Panama': '🇵🇦',
+            'Peru': '🇵🇪',
+            'Puerto Rico': '🇵🇷',
+            'Uruguay': '🇺🇾',
+            'Portugal': '🇵🇹',
+            'Spain': '🇪🇸',
+            'France': '🇫🇷',
+            'Germany': '🇩🇪',
+            'Italy': '🇮🇹',
+            'United Kingdom': '🇬🇧',
+            'United States': '🇺🇸',
+            'Canada': '🇨🇦',
+            'Australia': '🇦🇺',
+            'Netherlands': '🇳🇱',
+            'Belgium': '🇧🇪',
+            'Switzerland': '🇨🇭'
+        };
+        return flags[country] || '🌍';
+    }
+
+    // Show study details
+    function showStudyDetails(nctId) {
+        const study = studies.find(s => s.nct_id === nctId);
+        if (!study) return;
+
+        currentStudy = study;
+
+        document.getElementById('detail-title').textContent = study.title;
+        document.getElementById('detail-nct').textContent = study.nct_id;
+        document.getElementById('detail-nct-link').href = `https://clinicaltrials.gov/ct2/show/${study.nct_id}`;
+
+        // General information
+        document.getElementById('detail-phase-status').innerHTML = `
+            <strong>Fase:</strong> ${study.phase}<br>
+            <strong>Estado:</strong> ${study.status}
+        `;
+
+        document.getElementById('detail-condition').innerHTML = `
+            <strong>Condição:</strong> ${study.conditions}
+        `;
+
+        // Locations
+        document.getElementById('detail-locations').innerHTML =
+            study.locations || 'Localizações não disponíveis';
+
+        // Study arms
+        document.getElementById('detail-arms').innerHTML =
+            study.arms_description || 'Descrição dos braços não disponível';
+
+        // Inclusion criteria
+        document.getElementById('detail-inclusion').innerHTML =
+            study.inclusion_criteria || 'Critérios de inclusão não disponíveis';
+
+        // Exclusion criteria
+        document.getElementById('detail-exclusion').innerHTML =
+            study.exclusion_criteria || 'Critérios de exclusão não disponíveis';
+
+        // Reset criteria to collapsed state
+        document.getElementById('detail-inclusion-content').classList.remove('expanded');
+        document.getElementById('detail-inclusion-content').classList.add('collapsed');
+        document.getElementById('detail-exclusion-content').classList.remove('expanded');
+        document.getElementById('detail-exclusion-content').classList.add('collapsed');
+        document.getElementById('inclusion-arrow').textContent = '▶';
+        document.getElementById('exclusion-arrow').textContent = '▶';
+
+        // Show modal
+        document.getElementById('detail-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Toggle criteria visibility
+    function toggleCriteria(type) {
+        const content = document.getElementById(`detail-${type}-content`);
+        const arrow = document.getElementById(`${type}-arrow`);
+
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            content.classList.add('expanded');
+            arrow.textContent = '▼';
+        } else {
+            content.classList.remove('expanded');
+            content.classList.add('collapsed');
+            arrow.textContent = '▶';
+        }
+    }
+
+    // Check server status
+    async function checkServerStatus() {
+        try {
+            const response = await fetch(`${API_URL}/api/status`);
+            if (!response.ok) {
+                throw new Error('Server not responding');
+            }
+            const data = await response.json();
+            console.log('Server status:', data);
+            return true;
+        } catch (error) {
+            console.error('Server check failed:', error);
+            showError('Não é possível conectar ao servidor. Verifique se o Flask está rodando na porta 5000.');
+            return false;
+        }
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Check server status first
+        const serverOk = await checkServerStatus();
+        if (!serverOk) return;
+
+        // Load initial data
+        await loadOverallStats();
+        await loadAvailableFilters();
+
+        // View All button
+        viewAllBtn.addEventListener('click', () => {
+            // Reset all filters
+            titleFilter.value = '';
+            phaseFilter.value = 'all';
+            tumorFilter.value = 'all';
+            countryFilter.value = 'all';
+
+            activeFilters = {
+                title: '',
+                phase: 'all',
+                tumor: 'all',
+                country: 'all'
+            };
+
+            loadAllStudies();
+        });
+
+        // Title filter with debounce
+        titleFilter.addEventListener('input', debounce((e) => {
+            activeFilters.title = e.target.value;
+            searchStudies();
+        }, 500));
+
+        // Phase filter
+        phaseFilter.addEventListener('change', (e) => {
+            activeFilters.phase = e.target.value;
+            searchStudies();
+        });
+
+        // Tumor filter
+        tumorFilter.addEventListener('change', (e) => {
+            activeFilters.tumor = e.target.value;
+            searchStudies();
+        });
+
+        // Country filter
+        countryFilter.addEventListener('change', (e) => {
+            activeFilters.country = e.target.value;
+            searchStudies();
+        });
+
+        // Modal close buttons
+        document.getElementById('close-detail')?.addEventListener('click', () => {
+            document.getElementById('detail-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        document.getElementById('close-btn')?.addEventListener('click', () => {
+            document.getElementById('detail-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Contact button
+        document.getElementById('contact-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentStudy) {
+                const subject = encodeURIComponent(currentStudy.nct_id);
+                const body = encodeURIComponent(`Olá, gostaria de saber mais informações sobre o estudo ${currentStudy.nct_id} - ${currentStudy.title}`);
+                window.location.href = `mailto:faleconosco@auroratrials.pt?subject=${subject}&body=${body}`;
+            }
+        });
+
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('detail-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Click outside modal to close
+        document.getElementById('detail-overlay')?.addEventListener('click', (e) => {
+            if (e.target.id === 'detail-overlay') {
+                e.target.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    // Make functions globally available
+    window.showStudyDetails = showStudyDetails;
+    window.toggleCriteria = toggleCriteria;
+    </script>
+</body>
+</html>

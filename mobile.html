@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora - Ensaios Clínicos Mobile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Fixed Header */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .aurora-logo {
+            width: 32px;
+            height: 18px;
+            fill: #0056b3;
+        }
+
+        .logo-text {
+            color: #0056b3;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .search-icon {
+            background: #0056b3;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .mobile-content {
+            margin-top: 80px;
+            margin-bottom: 100px;
+            padding: 20px;
+        }
+
+        /* Search Bar (Initially Hidden) */
+        .search-bar {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .search-bar.active {
+            transform: translateY(0);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: #0056b3;
+        }
+
+        /* Stats Header */
+        .stats-header {
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Study List */
+        .studies-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .study-item {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .study-item:last-child {
+            border-bottom: none;
+        }
+
+        .study-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .study-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #0056b3 0%, #00b3b3 100%);
+        }
+
+        .study-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .nct-id {
+            font-size: 12px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        .study-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .study-badges {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .phase-badge {
+            background: #e6f2ff;
+            color: #0056b3;
+        }
+
+        .status-badge {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .tumor-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .study-condition {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .study-location {
+            font-size: 13px;
+            color: #0056b3;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Floating Filters */
+        .floating-filters {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .filter-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .filter-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .filter-icon.phase {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+        }
+
+        .filter-icon.tumor {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+        }
+
+        .filter-icon.country {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .filter-icon.view-all {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+        }
+
+        .filter-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Filter Modal */
+        .filter-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            align-items: flex-end;
+        }
+
+        .filter-content {
+            background: white;
+            padding: 30px 20px 20px;
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .filter-modal.active .filter-content {
+            transform: translateY(0);
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .filter-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0056b3;
+            flex: 1;
+        }
+
+        .close-filter {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .filter-group {
+            margin-bottom: 25px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #0056b3;
+        }
+
+        .apply-filters {
+            width: 100%;
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0056b3;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Modal (Same as Desktop) */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            display: none;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .detail-container {
+            background: white;
+            max-width: 100%;
+            margin: 20px auto;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+            color: white;
+            padding: 25px 20px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .detail-content {
+            padding: 25px 20px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section h3 {
+            color: #0056b3;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .detail-text {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .criteria-detail {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #0056b3;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .criteria-detail.expanded {
+            display: block;
+        }
+
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .arrow-icon.rotated {
+            transform: rotate(90deg);
+        }
+
+        .centers-detail {
+            background: #ecfdf5;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-primary, .btn-contact {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #0056b3;
+            color: white;
+        }
+
+        .btn-contact {
+            background: #10b981;
+            color: white;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 375px) {
+            .floating-filters {
+                left: 10px;
+                right: 10px;
+                gap: 8px;
+            }
+
+            .filter-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+        }
+
+        /* Animation */
+        .study-item {
+            animation: slideUp 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Staggered animation for list items */
+        .study-item:nth-child(1) { animation-delay: 0.1s; }
+        .study-item:nth-child(2) { animation-delay: 0.2s; }
+        .study-item:nth-child(3) { animation-delay: 0.3s; }
+        .study-item:nth-child(4) { animation-delay: 0.4s; }
+        .study-item:nth-child(5) { animation-delay: 0.5s; }
+        .study-item:nth-child(n+6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Fixed Header -->
+    <div class="mobile-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <svg class="aurora-logo" viewBox="0 0 408 216" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M248.79,192l137.88-79.61-12-20.78-137.88,79.61L316.4,33.33l-20.79-12-79.61,137.89V0h-24V159.22L112.4,21.33l-20.79,12,79.61,137.89L33.33,91.61l-12,20.78,137.89,79.61H0v24H176.39c-1.62-3.68-2.51-7.73-2.51-12,0-16.57,13.43-30,30-30s30,13.43,30,30c0,4.27-.89,8.32-2.51,12h176.63v-24H248.79Z"/>
+                </svg>
+                <div class="logo-text">Aurora</div>
+            </div>
+            <button class="search-icon" id="search-toggle">🔍</button>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar" id="search-bar">
+        <input type="text" class="search-input" id="title-filter" placeholder="Pesquisar no título do estudo...">
+    </div>
+
+    <!-- Main Content -->
+    <div class="mobile-content">
+        <!-- Stats Header -->
+        <div class="stats-header">
+            <h2>Ensaios Clínicos</h2>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-studies">-</span>
+                    <span class="stat-label">Estudos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="total-countries">-</span>
+                    <span class="stat-label">Países</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="visible-studies">0</span>
+                    <span class="stat-label">Visíveis</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Studies List -->
+        <div id="content-area">
+            <div class="empty-state" id="initial-state">
+                <div class="empty-icon">🔍</div>
+                <h3>Comece sua busca</h3>
+                <p>Use os filtros abaixo ou toque em "Ver Todos" para começar</p>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Carregando estudos...</p>
+        </div>
+    </div>
+
+    <!-- Floating Filter Icons -->
+    <div class="floating-filters">
+        <button class="filter-icon phase" id="phase-filter-btn" title="Fase">
+            🧪
+            <span class="filter-badge" id="phase-badge"></span>
+        </button>
+        <button class="filter-icon tumor" id="tumor-filter-btn" title="Tumor">
+            🎯
+            <span class="filter-badge" id="tumor-badge"></span>
+        </button>
+        <button class="filter-icon country" id="country-filter-btn" title="País">
+            🌍
+            <span class="filter-badge" id="country-badge"></span>
+        </button>
+        <button class="filter-icon view-all" id="view-all-btn" title="Ver Todos">
+            📋
+        </button>
+    </div>
+
+    <!-- Filter Modals -->
+    <div class="filter-modal" id="phase-modal">
+        <div class="filter-content">
+            <div class="filter-header">
+                <h3 class="filter-title">Fase do Estudo</h3>
+                <button class="close-filter">&times;</button>
+            </div>
+            <div class="filter-group">
+                <select id="phase-select">
+                    <option value="all">Todas as Fases</option>
+                    <option value="Fase 1">Fase 1</option>
+                    <option value="Fase 2">Fase 2</option>
+                    <option value="Fase 3">Fase 3</option>
+                    <option value="Fase 4">Fase 4</option>
+                    <option value="Outras">Outras</option>
+                </select>
+            </div>
+            <button class="apply-filters">Aplicar Filtro</button>
+        </div>
+    </div>
+
+    <div class="filter-modal" id="tumor-modal">
+        <div class="filter-content">
+            <div class="filter-header">
+                <h3 class="filter-title">Tipo de Tumor</h3>
+                <button class="close-filter">&times;</button>
+            </div>
+            <div class="filter-group">
+                <select id="tumor-select">
+                    <option value="all">Todos os Tipos</option>
+                    <option value="Lung Cancer">Cancro do Pulmão</option>
+                    <option value="Breast Cancer">Cancro da Mama</option>
+                    <option value="GI Cancer">Cancro Gastrointestinal</option>
+                    <option value="Prostate Cancer">Cancro da Próstata</option>
+                    <option value="Bladder Cancer">Cancro da Bexiga</option>
+                    <option value="Kidney Cancer">Cancro do Rim</option>
+                    <option value="Other">Outros</option>
+                </select>
+            </div>
+            <button class="apply-filters">Aplicar Filtro</button>
+        </div>
+    </div>
+
+    <div class="filter-modal" id="country-modal">
+        <div class="filter-content">
+            <div class="filter-header">
+                <h3 class="filter-title">País</h3>
+                <button class="close-filter">&times;</button>
+            </div>
+            <div class="filter-group">
+                <select id="country-select">
+                    <option value="all">Todos os Países</option>
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+            <button class="apply-filters">Aplicar Filtro</button>
+        </div>
+    </div>
+
+    <!-- Study Detail Modal (Same as Desktop) -->
+    <div class="detail-overlay" id="detail-overlay">
+        <div class="detail-container">
+            <div class="detail-header">
+                <button class="close-btn" id="close-detail">&times;</button>
+                <h2 id="detail-title"></h2>
+                <a href="#" target="_blank" class="nct-id-link" id="detail-nct-link">
+                    <div class="nct-id" id="detail-nct"></div>
+                </a>
+            </div>
+
+            <div class="detail-content">
+                <div class="detail-section">
+                    <h3>📋 Informações Gerais</h3>
+                    <div class="detail-text" id="detail-phase-status"></div>
+                    <div class="detail-text" id="detail-condition"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🏥 Localizações</h3>
+                    <div class="centers-detail" id="detail-locations"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🧪 Braços do Estudo</h3>
+                    <div class="centers-detail" id="detail-arms"></div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 onclick="toggleCriteria('inclusion')">
+                        <span id="inclusion-arrow" class="arrow-icon">▶</span> Critérios de Inclusão
+                    </h3>
+                    <div class="criteria-detail" id="detail-inclusion-content">
+                        <div id="detail-inclusion"></div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 onclick="toggleCriteria('exclusion')">
+                        <span id="exclusion-arrow" class="arrow-icon">▶</span> Critérios de Exclusão
+                    </h3>
+                    <div class="criteria-detail" id="detail-exclusion-content">
+                        <div id="detail-exclusion"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="#" class="btn-contact" id="contact-btn">
+                    ✉️ Contactar
+                </a>
+                <button class="btn-primary" id="close-btn">
+                    Voltar à Lista
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_URL = 'http://localhost:5000';
+
+        // Global variables
+        let studies = [];
+        let allStudies = [];
+        let activeFilters = {
+            title: '',
+            phase: 'all',
+            tumor: 'all',
+            country: 'all'
+        };
+        let currentStudy = null;
+        let hasSearched = false;
+
+        // DOM Elements
+        const searchToggle = document.getElementById('search-toggle');
+        const searchBar = document.getElementById('search-bar');
+        const titleFilter = document.getElementById('title-filter');
+        const contentArea = document.getElementById('content-area');
+        const loadingElement = document.getElementById('loading');
+        const initialState = document.getElementById('initial-state');
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Toggle search bar
+        function toggleSearch() {
+            searchBar.classList.toggle('active');
+            if (searchBar.classList.contains('active')) {
+                setTimeout(() => titleFilter.focus(), 300);
+            }
+        }
+
+        // Load overall statistics
+        async function loadOverallStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/stats`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                updateStats(data);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load available filters
+        async function loadAvailableFilters() {
+            try {
+                const response = await fetch(`${API_URL}/api/filters`);
+                const data = await response.json();
+
+                if (data.countries && data.countries.length > 0) {
+                    const countrySelect = document.getElementById('country-select');
+                    countrySelect.innerHTML = '<option value="all">Todos os Países</option>';
+                    data.countries.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country;
+                        option.textContent = country;
+                        countrySelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            document.getElementById('total-studies').textContent = data.total_studies || 0;
+            document.getElementById('total-countries').textContent = data.total_countries || 0;
+        }
+
+        // Search studies from backend
+        async function searchStudies() {
+            loadingElement.style.display = 'block';
+            contentArea.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/api/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(activeFilters)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                studies = data.studies || [];
+                allStudies = studies;
+                hasSearched = true;
+
+                displayStudies(studies);
+                updateVisibleCount(studies.length);
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('Não é possível conectar ao servidor. Verifique se o Flask está rodando na porta 5000.');
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        // Display studies as list
+        function displayStudies(studiesToDisplay) {
+            if (studiesToDisplay.length === 0) {
+                contentArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <h3>Nenhum estudo encontrado</h3>
+                        <p>Tente ajustar seus filtros de busca</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const listContainer = document.createElement('div');
+            listContainer.className = 'studies-list';
+
+            studiesToDisplay.forEach((study, index) => {
+                const item = createStudyItem(study, index);
+                listContainer.appendChild(item);
+            });
+
+            contentArea.innerHTML = '';
+            contentArea.appendChild(listContainer);
+        }
+
+        // Create study list item
+        function createStudyItem(study, index) {
+            const item = document.createElement('div');
+            item.className = 'study-item';
+            item.onclick = () => showStudyDetails(study.nct_id);
+
+            const numCenters = study.locations ? study.locations.split('|').length : 0;
+            const countryFlag = getCountryFlag(study.primary_country);
+
+            item.innerHTML = `
+                <div class="study-header">
+                    <div class="nct-id">${study.nct_id}</div>
+                </div>
+                <div class="study-title">${study.title}</div>
+                <div class="study-badges">
+                    <span class="badge phase-badge">${study.phase}</span>
+                    <span class="badge status-badge">${study.status}</span>
+                    <span class="badge tumor-badge">${study.tumor_category}</span>
+                </div>
+                <div class="study-condition">${study.conditions}</div>
+                <div class="study-location">
+                    <span>🏥</span>
+                    <span>${countryFlag} ${study.primary_country} (${numCenters} centros)</span>
+                </div>
+            `;
+
+            return item;
+        }
+
+        // Update visible count
+        function updateVisibleCount(count) {
+            document.getElementById('visible-studies').textContent = count;
+        }
+
+        // Show error
+        function showError(message) {
+            contentArea.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <h3>Erro</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Get country flag
+        function getCountryFlag(country) {
+            const flags = {
+                'Brazil': '🇧🇷', 'Brasil': '🇧🇷', 'Argentina': '🇦🇷', 'Chile': '🇨🇱',
+                'Colombia': '🇨🇴', 'Costa Rica': '🇨🇷', 'Cuba': '🇨🇺', 'Ecuador': '🇪🇨',
+                'Guatemala': '🇬🇹', 'Mexico': '🇲🇽', 'Panama': '🇵🇦', 'Peru': '🇵🇪',
+                'Puerto Rico': '🇵🇷', 'Uruguay': '🇺🇾', 'Portugal': '🇵🇹', 'Spain': '🇪🇸',
+                'France': '🇫🇷', 'Germany': '🇩🇪', 'Italy': '🇮🇹', 'United Kingdom': '🇬🇧',
+                'United States': '🇺🇸', 'Canada': '🇨🇦', 'Australia': '🇦🇺',
+                'Netherlands': '🇳🇱', 'Belgium': '🇧🇪', 'Switzerland': '🇨🇭'
+            };
+            return flags[country] || '🌍';
+        }
+
+        // Show study details (same modal as desktop)
+        function showStudyDetails(nctId) {
+            const study = studies.find(s => s.nct_id === nctId);
+            if (!study) return;
+
+            currentStudy = study;
+
+            document.getElementById('detail-title').textContent = study.title;
+            document.getElementById('detail-nct').textContent = study.nct_id;
+            document.getElementById('detail-nct-link').href = `https://clinicaltrials.gov/ct2/show/${study.nct_id}`;
+
+            document.getElementById('detail-phase-status').innerHTML = `
+                <strong>Fase:</strong> ${study.phase}<br>
+                <strong>Estado:</strong> ${study.status}
+            `;
+
+            document.getElementById('detail-condition').innerHTML = `
+                <strong>Condição:</strong> ${study.conditions}
+            `;
+
+            document.getElementById('detail-locations').innerHTML =
+                study.locations || 'Localizações não disponíveis';
+
+            document.getElementById('detail-arms').innerHTML =
+                study.arms_description || 'Descrição dos braços não disponível';
+
+            document.getElementById('detail-inclusion').innerHTML =
+                study.inclusion_criteria || 'Critérios de inclusão não disponíveis';
+
+            document.getElementById('detail-exclusion').innerHTML =
+                study.exclusion_criteria || 'Critérios de exclusão não disponíveis';
+
+            // Reset criteria to collapsed
+            document.getElementById('detail-inclusion-content').classList.remove('expanded');
+            document.getElementById('detail-exclusion-content').classList.remove('expanded');
+            document.getElementById('inclusion-arrow').textContent = '▶';
+            document.getElementById('exclusion-arrow').textContent = '▶';
+
+            document.getElementById('detail-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Toggle criteria visibility
+        function toggleCriteria(type) {
+            const content = document.getElementById(`detail-${type}-content`);
+            const arrow = document.getElementById(`${type}-arrow`);
+
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                arrow.textContent = '▶';
+            } else {
+                content.classList.add('expanded');
+                arrow.textContent = '▼';
+            }
+        }
+
+        // Filter modal functions
+        function openFilterModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeFilterModal(modal) {
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function updateFilterBadges() {
+            // Update filter badges
+            const phaseBadge = document.getElementById('phase-badge');
+            const tumorBadge = document.getElementById('tumor-badge');
+            const countryBadge = document.getElementById('country-badge');
+
+            phaseBadge.style.display = activeFilters.phase !== 'all' ? 'flex' : 'none';
+            tumorBadge.style.display = activeFilters.tumor !== 'all' ? 'flex' : 'none';
+            countryBadge.style.display = activeFilters.country !== 'all' ? 'flex' : 'none';
+        }
+
+        // Load all studies
+        async function loadAllStudies() {
+            activeFilters = { title: '', phase: 'all', tumor: 'all', country: 'all' };
+            await searchStudies();
+            updateFilterBadges();
+
+            // Reset all select elements
+            document.getElementById('phase-select').value = 'all';
+            document.getElementById('tumor-select').value = 'all';
+            document.getElementById('country-select').value = 'all';
+            titleFilter.value = '';
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadOverallStats();
+            await loadAvailableFilters();
+
+            // Search toggle
+            searchToggle.addEventListener('click', toggleSearch);
+
+            // Title search with debounce
+            titleFilter.addEventListener('input', debounce((e) => {
+                activeFilters.title = e.target.value;
+                searchStudies();
+            }, 500));
+
+            // View all button
+            document.getElementById('view-all-btn').addEventListener('click', loadAllStudies);
+
+            // Filter buttons
+            document.getElementById('phase-filter-btn').addEventListener('click', () => openFilterModal('phase-modal'));
+            document.getElementById('tumor-filter-btn').addEventListener('click', () => openFilterModal('tumor-modal'));
+            document.getElementById('country-filter-btn').addEventListener('click', () => openFilterModal('country-modal'));
+
+            // Filter modal close buttons
+            document.querySelectorAll('.close-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.filter-modal');
+                    closeFilterModal(modal);
+                });
+            });
+
+            // Apply filter buttons
+            document.querySelectorAll('.apply-filters').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.filter-modal');
+                    const modalId = modal.id;
+
+                    if (modalId === 'phase-modal') {
+                        activeFilters.phase = document.getElementById('phase-select').value;
+                    } else if (modalId === 'tumor-modal') {
+                        activeFilters.tumor = document.getElementById('tumor-select').value;
+                    } else if (modalId === 'country-modal') {
+                        activeFilters.country = document.getElementById('country-select').value;
+                    }
+
+                    searchStudies();
+                    updateFilterBadges();
+                    closeFilterModal(modal);
+                });
+            });
+
+            // Modal close events
+            document.getElementById('close-detail')?.addEventListener('click', () => {
+                document.getElementById('detail-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            document.getElementById('close-btn')?.addEventListener('click', () => {
+                document.getElementById('detail-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            // Contact button
+            document.getElementById('contact-btn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentStudy) {
+                    const subject = encodeURIComponent(currentStudy.nct_id);
+                    const body = encodeURIComponent(`Olá, gostaria de saber mais informações sobre o estudo ${currentStudy.nct_id} - ${currentStudy.title}`);
+                    window.location.href = `mailto:faleconosco@auroratrials.pt?subject=${subject}&body=${body}`;
+                }
+            });
+
+            // ESC key and click outside to close modals
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.filter-modal.active').forEach(modal => closeFilterModal(modal));
+
+                    if (document.getElementById('detail-overlay').style.display === 'block') {
+                        document.getElementById('detail-overlay').style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+
+                    if (searchBar.classList.contains('active')) {
+                        searchBar.classList.remove('active');
+                    }
+                }
+            });
+
+            // Click outside modals to close
+            document.querySelectorAll('.filter-modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeFilterModal(modal);
+                    }
+                });
+            });
+
+            document.getElementById('detail-overlay')?.addEventListener('click', (e) => {
+                if (e.target.id === 'detail-overlay') {
+                    e.target.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+
+        // Make functions globally available
+        window.showStudyDetails = showStudyDetails;
+        window.toggleCriteria = toggleCriteria;
+    </script>
+</body>
+</html>
