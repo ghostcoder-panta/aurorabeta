@@ -14,7 +14,7 @@ from datetime import datetime
 import re
 
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:5000', 'http://127.0.0.1:5000'])
+CORS(app)
 
 
 # Configurable CSV file path - checks multiple common locations
@@ -403,7 +403,10 @@ if __name__ == '__main__':
         print("WARNING: No CSV file found. API will return empty results.")
         print("Please ensure 'clinical_trials.csv' is in the same directory as app.py")
 
-    print("Starting server at http://localhost:5000")
+    # Get port from environment (Render sets this automatically)
+    port = int(os.environ.get('PORT', 5000))
+
+    print(f"Starting server on port {port}")
     print("API endpoints available:")
     print("  GET  /api/status   - Check server and data status")
     print("  GET  /api/stats    - Get overall statistics")
@@ -411,4 +414,9 @@ if __name__ == '__main__':
     print("  POST /api/search   - Search studies with filters")
     print("=" * 50)
 
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    # Production settings for deployment
+    app.run(
+        debug=False,  # Disable debug in production
+        port=port,  # Use environment port or default 5000
+        host='0.0.0.0'  # Bind to all interfaces
+    )
